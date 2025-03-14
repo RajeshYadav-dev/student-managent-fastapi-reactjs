@@ -1,0 +1,81 @@
+import uuid
+import os
+from fastapi import HTTPException, status
+from sqlmodel import Session, select
+from src.models.main import Student
+from src.schemas.main import UserCreate
+from src.utilitiies.crope_image import crop_image
+
+# Ensure the upload directory exists
+UPLOAD_DIR = "static/uploads/"
+os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+class StudentServices:
+  
+    async def get_all_students_ser(self, session: Session, offset: int, limit: int):
+        statement = select(Student).order_by(Student.created_at).offset(offset).limit(limit)
+        students = session.exec(statement).all()
+        return students or []
+    
+    async def get_a_students_ser(self, std_id: str, session: Session):
+        try:
+            uuid_str = uuid.UUID(std_id)
+        except ValueError:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid student ID format. Must be a valid UUID."
+            )
+        student = session.get(Student, uuid_str)
+        if not student:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Student not found.")
+        return student
+  
+    async def create_a_students_ser(self, std_data: UserCreate, session: Session):
+        statement = select(Student).where(Student.email == std_data.email)
+        db_student = session.exec(statement).first()
+        if db_student:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Student already exists.")
+        
+        db_student = Student.model_validate(std_data)
+        session.add(db_student)
+        session.commit()
+        session.refresh(db_student)
+        return db_student
+    
+    async def update_a_students_ser(self, std_id: str, std_data: UserCreate, session: Session):
+        student = await self.get_a_students_ser(std_id, session)
+        student_data = std_data.model_dump(exclude_unset=True)
+        student.sqlmodel_update(student_data)
+        session.add(student)
+        session.commit()
+        session.refresh(student)
+        return student
+  
+    async def delete_a_students_ser(self, std_id: str, session: Session):
+        student = await self.get_a_students_ser(std_id, session)
+        session.delete(student)
+        session.commit()
+        return student
+  
+    async def update_student_picture(self, std_id: str, file_name: str, session: Session):
+        file_path = f"{UPLOAD_DIR}{file_name}"
+        # Crop the uploaded image
+        cropped_file_path = crop_image(file_path)
+
+        # Get the student from the database
+        student = await self.get_a_students_ser(std_id, session)
+        
+        # Delete the old profile picture if it exists
+        if student.profile_pic_url:
+            old_file_path = student.profile_pic_url.lstrip("/")
+            full_old_file_path = os.path.join(os.getcwd(), old_file_path)
+            if os.path.exists(full_old_file_path):
+                os.remove(full_old_file_path)
+
+        # Update the profile picture URL in the database
+        student.profile_pic_url = f"/{cropped_file_path}"
+        session.add(student)
+        session.commit()
+        session.refresh(student)
+        
+        return student
