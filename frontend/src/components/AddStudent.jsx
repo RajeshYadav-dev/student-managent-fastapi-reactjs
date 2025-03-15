@@ -7,9 +7,24 @@ const AddStudent = () => {
     first_name: "",
     last_name: "",
     email: "",
+    password: "", // ✅ Added password field
+    phone_number: "",
+    date_of_birth: "",
+    gender: "Male",
+    address: "",
     city: "",
+    state: "",
+    postal_code: "",
     standard: "",
+    section: "",
+    roll_number: "",
+    enrollment_date: "",
+    gpa: 0,
+    profile_pic_url: "string",
     is_active: false,
+    guardian_name: "",
+    guardian_contact: "",
+    relationship: "",
   });
 
   const navigator = useNavigate();
@@ -24,104 +39,141 @@ const AddStudent = () => {
 
   const saveStudent = (event) => {
     event.preventDefault();
-    const form = event.target.form;
-    if (form.checkValidity() === false) {
-      event.preventDefault();
-      event.stopPropagation();
-    } else {
-      addStudent(student);
-      console.log(student);
-      setStudent({
-        first_name: "",
-        last_name: "",
-        email: "",
-        city: "",
-        standard: "",
-        is_active: false,
-      });
-      navigator("/");
-    }
+    addStudent(student)
+      .then(() => {
+        setStudent({
+          first_name: "",
+          last_name: "",
+          email: "",
+          password: "", // ✅ Reset password field
+          phone_number: "",
+          date_of_birth: "",
+          gender: "Male",
+          address: "",
+          city: "",
+          state: "",
+          postal_code: "",
+          standard: "",
+          section: "",
+          roll_number: "",
+          enrollment_date: "",
+          gpa: 0,
+          profile_pic_url: "string",
+          is_active: false,
+          guardian_name: "",
+          guardian_contact: "",
+          relationship: "",
+        });
+        navigator("/");
+      })
+      .catch((error) => console.error("Error adding student:", error));
   };
 
   return (
     <div className="container">
       <div className="row">
-        <div className="card col-md-6 offset-md-3 offset-md-3 my-5">
+        <div className="card col-md-8 offset-md-2 my-5">
           <h2 className="text-center">Add Student</h2>
           <div className="card-body">
-            <form>
-              <div className="form-group mb-2">
-                <label className="form-label">Student First Name</label>
-                <input
-                  type="text"
-                  placeholder="Enter Student First Name"
-                  name="first_name"
-                  value={student.first_name}
-                  className="form-control"
-                  required
-                  onChange={handleOnChange}
-                />
+            <form onSubmit={saveStudent}>
+              <div className="row">
+                {[
+                  { label: "First Name", name: "first_name", type: "text" },
+                  { label: "Last Name", name: "last_name", type: "text" },
+                  { label: "Password", name: "password", type: "password" }, // ✅ Added password field
+                  { label: "Email", name: "email", type: "email" },
+                  { label: "Phone Number", name: "phone_number", type: "text" },
+                  {
+                    label: "Date of Birth",
+                    name: "date_of_birth",
+                    type: "date",
+                  },
+                  { label: "Address", name: "address", type: "text" },
+                  { label: "City", name: "city", type: "text" },
+                  { label: "State", name: "state", type: "text" },
+                  { label: "Postal Code", name: "postal_code", type: "text" },
+                  { label: "Class", name: "standard", type: "text" },
+                  { label: "Section", name: "section", type: "text" },
+                  { label: "Roll Number", name: "roll_number", type: "text" },
+                  {
+                    label: "Enrollment Date",
+                    name: "enrollment_date",
+                    type: "date",
+                  },
+                  { label: "GPA", name: "gpa", type: "number" },
+                  {
+                    label: "Guardian Name",
+                    name: "guardian_name",
+                    type: "text",
+                  },
+                  {
+                    label: "Guardian Contact",
+                    name: "guardian_contact",
+                    type: "text",
+                  },
+                  {
+                    label: "Relation with Guardian",
+                    name: "relationship",
+                    type: "text",
+                  },
+                ].map(({ label, name, type }) => (
+                  <div className="col-md-6 mb-3" key={name}>
+                    <label className="form-label">{label}</label>
+                    <input
+                      type={type}
+                      placeholder={`Enter ${label}`}
+                      name={name}
+                      value={student[name]}
+                      className="form-control"
+                      required
+                      onChange={handleOnChange}
+                    />
+                  </div>
+                ))}
               </div>
-              <div className="form-group mb-2">
-                <label className="form-label">Student Last Name</label>
-                <input
-                  type="text"
-                  placeholder="Enter Student Last Name"
-                  name="last_name"
-                  value={student.last_name}
-                  className="form-control"
-                  required
-                  onChange={handleOnChange}
-                />
+
+              {/* Gender Selection */}
+              <div className="row">
+                <div className="col-md-6 mb-3">
+                  <label className="form-label">Gender</label>
+                  <div>
+                    <label className="me-3">
+                      <input
+                        type="radio"
+                        name="gender"
+                        value="Male"
+                        checked={student.gender === "Male"}
+                        onChange={handleOnChange}
+                      />{" "}
+                      Male
+                    </label>
+                    <label>
+                      <input
+                        type="radio"
+                        name="gender"
+                        value="Female"
+                        checked={student.gender === "Female"}
+                        onChange={handleOnChange}
+                      />{" "}
+                      Female
+                    </label>
+                  </div>
+                </div>
+
+                {/* Active Checkbox */}
+                <div className="col-md-6 mb-3">
+                  <label className="form-label me-2">Active</label>
+                  <input
+                    type="checkbox"
+                    name="is_active"
+                    checked={student.is_active}
+                    onChange={handleOnChange}
+                  />
+                </div>
               </div>
-              <div className="form-group mb-2">
-                <label className="form-label">Student Email</label>
-                <input
-                  type="email"
-                  placeholder="Enter Student Email"
-                  name="email"
-                  value={student.email}
-                  className="form-control"
-                  required
-                  onChange={handleOnChange}
-                />
-              </div>
-              <div className="form-group mb-2">
-                <label className="form-label">Student City</label>
-                <input
-                  type="text"
-                  placeholder="Enter Student City"
-                  name="city"
-                  value={student.city}
-                  className="form-control"
-                  required
-                  onChange={handleOnChange}
-                />
-              </div>
-              <div className="form-group mb-2">
-                <label className="form-label">Student Class</label>
-                <input
-                  type="text"
-                  placeholder="Enter Student Class"
-                  name="standard"
-                  value={student.standard}
-                  className="form-control"
-                  required
-                  onChange={handleOnChange}
-                />
-              </div>
-              <div className="form-group mb-2">
-                <label className="form-label me-2">Accept</label>
-                <input
-                  type="checkbox"
-                  name="is_active"
-                  checked={student.is_active}
-                  required
-                  onChange={handleOnChange}
-                />
-              </div>
+
               <div className="text-center">
-                <button className="btn btn-success" onClick={saveStudent}>
+                <button className="btn btn-success" type="submit">
                   Add Student
                 </button>
               </div>

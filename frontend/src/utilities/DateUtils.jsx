@@ -24,3 +24,14 @@ export const formatDate = (date) => {
     .toString()
     .padStart(2, "0")}:${seconds.toString().padStart(2, "0")} ${ampm}`;
 };
+
+export const onlyDate = (dateString) => {
+  if (!dateString) return "N/A"; // Handle empty/null dates
+
+  const date = new Date(dateString);
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+};
